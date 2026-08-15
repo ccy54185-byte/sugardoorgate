@@ -663,9 +663,41 @@ footer a { color: var(--fire); text-decoration: none; }
   .scroll-section .content { padding: 80px 20px; }
   .stats-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
 }
+
+/* ── 星辰背景 ──────────────────────────────────────── */
+#starfield {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.glass-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -1;
+  background: rgba(5, 5, 8, 0.65);
+  backdrop-filter: blur(1px) saturate(120%);
+  -webkit-backdrop-filter: blur(1px) saturate(120%);
+  pointer-events: none;
+}
+
+/* 覆盖原有背景 */
+body {
+  background: transparent !important;
+}
 </style>
 </head>
 <body>
+
+<!-- 星辰背景 Canvas -->
+<canvas id="starfield"></canvas>
+
+<!-- 磨砂玻璃遮罩层 -->
+<div class="glass-overlay"></div>
+
 
 <!-- 导航 -->
 <nav class="nav" id="nav">
@@ -1152,6 +1184,329 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+  // ═══════════════════════════════════════════════════
+  //  星辰流星背景 — Canvas GPU 粒子系统
+  // ═══════════════════════════════════════════════════
+  (function() {
+    const canvas = document.getElementById('starfield');
+    const ctx = canvas.getContext('2d');
+    
+    // 设备像素比
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    
+    // 性能检测
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    const STAR_COUNT = isMobile ? 600 : 2000;
+    const METEOR_MAX = isMobile ? 5 : 15;
+    
+    let W, H;
+    
+    function resize() {
+      W = window.innerWidth;
+      H = window.innerHeight;
+      canvas.width = W * dpr;
+      canvas.height = H * dpr;
+      canvas.style.width = W + 'px';
+      canvas.style.height = H + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    window.addEventListener('resize', resize);
+    
+    // ── 鼠标追踪 ──────────────────────────────────────
+    const mouse = { x: W / 2, y: H / 2, vx: 0, vy: 0, speed: 0, prevX: W / 2, prevY: H / 2 };
+    let mouseHistory = [];
+    const HISTORY_LEN = 12;
+    
+    document.addEventListener('mousemove', (e) => {
+      mouse.prevX = mouse.x;
+      mouse.prevY = mouse.y;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      mouse.vx = mouse.x - mouse.prevX;
+      mouse.vy = mouse.y - mouse.prevY;
+      mouse.speed = Math.sqrt(mouse.vx * mouse.vx + mouse.vy * mouse.vy);
+      
+      mouseHistory.push({ x: mouse.x, y: mouse.y, t: Date.now() });
+      if (mouseHistory.length > HISTORY_LEN) mouseHistory.shift();
+    });
+    
+    // ── 星辰类 ────────────────────────────────────────
+    class Star {
+      constructor(layer) {
+        this.layer = layer; // 0=远, 1=中, 2=近
+        this.reset(true);
+      }
+      
+      reset(initial) {
+        this.x = Math.random() * W;
+        this.y = Math.random() * H;
+        this.originX = this.x;
+        this.originY = this.y;
+        
+        if (this.layer === 0) { // 远景
+          this.size = Math.random() * 1.2 + 0.3;
+          this.brightness = Math.random() * 0.4 + 0.1;
+          this.speed = Math.random() * 0.3 + 0.1;
+          this.parallax = 0.15;
+        } else if (this.layer === 1) { // 中景
+          this.size = Math.random() * 2 + 1;
+          this.brightness = Math.random() * 0.5 + 0.3;
+          this.speed = Math.random() * 0.6 + 0.3;
+          this.parallax = 0.4;
+        } else { // 近景
+          this.size = Math.random() * 3 + 1.5;
+          this.brightness = Math.random() * 0.4 + 0.6;
+          this.speed = Math.random() * 1.2 + 0.6;
+          this.parallax = 0.8;
+        }
+        
+        this.vx = 0;
+        this.vy = 0;
+        this.trail = [];
+        this.trailLen = this.layer === 2 ? 8 : (this.layer === 1 ? 4 : 2);
+        this.twinkle = Math.random() * Math.PI * 2;
+        this.twinkleSpeed = Math.random() * 0.02 + 0.005;
+        this.hue = Math.random() > 0.8 ? (Math.random() * 40 + 200) : 0; // 偶尔彩色
+      }
+      
+      update(dt) {
+        this.twinkle += this.twinkleSpeed;
+        const twinkleFactor = 0.7 + Math.sin(this.twinkle) * 0.3;
+        
+        // 鼠标引力场
+        const dx = mouse.x - this.x;
+        const dy = mouse.y - this.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const gravityRadius = 250;
+        
+        let fx = 0, fy = 0;
+        
+        if (dist < gravityRadius && dist > 1) {
+          const force = (1 - dist / gravityRadius) * this.parallax * 0.8;
+          fx += (dx / dist) * force;
+          fy += (dy / dist) * force;
+        }
+        
+        // 鼠标速度影响
+        const mouseInfluence = this.parallax * this.speed;
+        fx += mouse.vx * mouseInfluence * 0.08;
+        fy += mouse.vy * mouseInfluence * 0.08;
+        
+        // 应用力
+        this.vx += fx * dt;
+        this.vy += fy * dt;
+        
+        // 阻尼
+        const damp = 0.92;
+        this.vx *= damp;
+        this.vy *= damp;
+        
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // 轨迹
+        if (this.layer >= 1 && mouse.speed > 2) {
+          this.trail.push({ x: this.x, y: this.y, alpha: 1 });
+          if (this.trail.length > this.trailLen) this.trail.shift();
+        }
+        for (let i = 0; i < this.trail.length; i++) {
+          this.trail[i].alpha *= 0.85;
+        }
+        this.trail = this.trail.filter(t => t.alpha > 0.02);
+        
+        // 边界环绕
+        if (this.x < -50) this.x += W + 100;
+        if (this.x > W + 50) this.x -= W + 100;
+        if (this.y < -50) this.y += H + 100;
+        if (this.y > H + 50) this.y -= H + 100;
+        
+        this.currentBrightness = this.brightness * twinkleFactor;
+        // 速度越快越亮
+        const vel = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        this.currentBrightness = Math.min(1, this.currentBrightness + vel * 0.05);
+      }
+      
+      draw() {
+        // 绘制轨迹
+        if (this.trail.length > 1) {
+          for (let i = 1; i < this.trail.length; i++) {
+            const t = this.trail[i];
+            const p = this.trail[i - 1];
+            const alpha = t.alpha * this.currentBrightness * 0.5;
+            if (this.hue) {
+              ctx.strokeStyle = `hsla(${this.hue}, 80%, 70%, ${alpha})`;
+            } else {
+              ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+            }
+            ctx.lineWidth = this.size * 0.5 * t.alpha;
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(t.x, t.y);
+            ctx.stroke();
+          }
+        }
+        
+        // 绘制星辰
+        const alpha = this.currentBrightness;
+        if (alpha < 0.01) return;
+        
+        ctx.save();
+        if (this.hue) {
+          ctx.fillStyle = `hsla(${this.hue}, 70%, 80%, ${alpha})`;
+        } else {
+          ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+        }
+        
+        // Glow 效果（近景）
+        if (this.layer === 2 && this.currentBrightness > 0.5) {
+          ctx.shadowBlur = this.size * 4;
+          ctx.shadowColor = this.hue ? `hsla(${this.hue}, 80%, 70%, 0.5)` : 'rgba(255, 255, 255, 0.5)';
+        }
+        
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size * (0.8 + this.currentBrightness * 0.4), 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+    
+    // ── 流星类 ────────────────────────────────────────
+    class Meteor {
+      constructor() {
+        this.active = false;
+      }
+      
+      spawn() {
+        const angle = Math.atan2(mouse.vy, mouse.vx) + (Math.random() - 0.5) * 0.6;
+        const speed = mouse.speed * (1.5 + Math.random() * 2);
+        
+        this.x = mouse.x + (Math.random() - 0.5) * 200;
+        this.y = mouse.y + (Math.random() - 0.5) * 200;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.life = 1;
+        this.decay = 0.015 + Math.random() * 0.01;
+        this.size = Math.random() * 2 + 1;
+        this.length = 30 + mouse.speed * 2;
+        this.active = true;
+        this.hue = Math.random() > 0.7 ? (Math.random() * 40 + 200) : 0;
+        this.isSpecial = mouse.speed > 30 && Math.random() > 0.8;
+        if (this.isSpecial) {
+          this.size *= 2;
+          this.length *= 2;
+          this.decay *= 0.7;
+        }
+      }
+      
+      update() {
+        if (!this.active) return;
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vx *= 0.98;
+        this.vy *= 0.98;
+        this.life -= this.decay;
+        if (this.life <= 0) this.active = false;
+      }
+      
+      draw() {
+        if (!this.active) return;
+        
+        const tailX = this.x - this.vx * this.length * 0.1;
+        const tailY = this.y - this.vy * this.length * 0.1;
+        
+        const gradient = ctx.createLinearGradient(this.x, this.y, tailX, tailY);
+        if (this.hue) {
+          gradient.addColorStop(0, `hsla(${this.hue}, 90%, 80%, ${this.life})`);
+          gradient.addColorStop(0.3, `hsla(${this.hue}, 80%, 60%, ${this.life * 0.6})`);
+          gradient.addColorStop(1, `hsla(${this.hue}, 70%, 40%, 0)`);
+        } else {
+          gradient.addColorStop(0, `rgba(255, 255, 255, ${this.life})`);
+          gradient.addColorStop(0.3, `rgba(200, 220, 255, ${this.life * 0.6})`);
+          gradient.addColorStop(1, `rgba(100, 150, 255, 0)`);
+        }
+        
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = this.size * this.life;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+        
+        // 流星头
+        if (this.life > 0.3) {
+          ctx.save();
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.life})`;
+          ctx.shadowBlur = this.isSpecial ? 20 : 10;
+          ctx.shadowColor = this.hue ? `hsla(${this.hue}, 90%, 80%, 0.8)` : 'rgba(255, 255, 255, 0.8)';
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size * this.life * 1.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
+    
+    // ── 初始化 ────────────────────────────────────────
+    const stars = [];
+    // 远景 60%, 中景 30%, 近景 10%
+    for (let i = 0; i < STAR_COUNT * 0.6; i++) stars.push(new Star(0));
+    for (let i = 0; i < STAR_COUNT * 0.3; i++) stars.push(new Star(1));
+    for (let i = 0; i < STAR_COUNT * 0.1; i++) stars.push(new Star(2));
+    
+    const meteors = [];
+    for (let i = 0; i < METEOR_MAX; i++) meteors.push(new Meteor());
+    
+    let meteorCooldown = 0;
+    let lastTime = performance.now();
+    
+    // ── 主循环 ────────────────────────────────────────
+    function animate(now) {
+      const dt = Math.min((now - lastTime) / 16, 3); // 归一化到 60fps
+      lastTime = now;
+      
+      // 清除（带轻微残影 = Motion Blur）
+      ctx.fillStyle = 'rgba(2, 2, 5, 0.15)';
+      ctx.fillRect(0, 0, W, H);
+      
+      // 更新并绘制星辰
+      for (let i = 0; i < stars.length; i++) {
+        stars[i].update(dt);
+        stars[i].draw();
+      }
+      
+      // 流星生成
+      meteorCooldown -= dt;
+      if (mouse.speed > 12 && meteorCooldown <= 0) {
+        const count = Math.min(3, Math.floor(mouse.speed / 15));
+        for (let i = 0; i < count; i++) {
+          const idle = meteors.find(m => !m.active);
+          if (idle) {
+            idle.spawn();
+            meteorCooldown = 3;
+          }
+        }
+      }
+      
+      // 更新并绘制流星
+      for (let i = 0; i < meteors.length; i++) {
+        meteors[i].update();
+        meteors[i].draw();
+      }
+      
+      // 衰减鼠标速度
+      mouse.vx *= 0.9;
+      mouse.vy *= 0.9;
+      mouse.speed *= 0.9;
+      
+      requestAnimationFrame(animate);
+    }
+    
+    requestAnimationFrame(animate);
+  })();
 </script>
 </body>
 </html>
+
