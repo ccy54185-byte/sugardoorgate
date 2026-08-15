@@ -2281,6 +2281,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (token) {
       document.getElementById('registerBtn').style.display = 'inline-block';
     }
+    
+    // 检查登录状态
+    checkLoginStatus();
   });
 
   // ── 登录状态检查 ──────────────────────────────────
@@ -2375,6 +2378,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 </body>
 </html>
+
 
 
 
