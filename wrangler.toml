@@ -1,8 +1,8 @@
-name = "tangmen-website"
+name = "sugardoorgate"
 compatibility_date = "2024-01-01"
 pages_build_output_dir = "."
 
 [[d1_databases]]
 binding = "DB"
-database_name = "tangmen-users"
-database_id = "f09ebf8d-a35e-4b8e-924f-eea291818efe"
+database_name = "sugardoorgate-db"
+database_id = "84b1a342-6cf1-4516-b519-6cff71077bac"
