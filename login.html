@@ -186,58 +186,6 @@ body {
   color: rgba(134, 134, 139, 0.6);
 }
 
-/* 头像上传 */
-.avatar-upload {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-}
-
-.avatar-preview {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.avatar-preview:hover {
-  border-color: var(--gold);
-  background: rgba(201, 162, 39, 0.05);
-}
-
-.avatar-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.avatar-preview .placeholder {
-  font-size: 32px;
-  color: var(--muted);
-}
-
-.avatar-upload-text {
-  flex: 1;
-}
-
-.avatar-upload-text p {
-  font-size: 14px;
-  color: var(--paper);
-  margin-bottom: 4px;
-}
-
-.avatar-upload-text span {
-  font-size: 12px;
-  color: var(--muted);
-}
 
 /* 提交按钮 */
 .submit-btn {
@@ -319,29 +267,6 @@ body {
   display: block;
 }
 
-.user-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
-  border: 3px solid var(--gold);
-  margin: 0 auto 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.user-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.user-avatar .placeholder {
-  font-size: 40px;
-  color: var(--muted);
-}
 
 .user-nickname {
   font-size: 24px;
@@ -413,9 +338,6 @@ body {
     
     <!-- 登录后显示的用户卡片 -->
     <div class="user-card" id="userCard">
-      <div class="user-avatar" id="userAvatar">
-        <span class="placeholder">👤</span>
-      </div>
       <div class="user-nickname" id="userNickname"></div>
       <div class="user-id" id="userId"></div>
       <button class="logout-btn" onclick="logout()">退出登录</button>
@@ -452,18 +374,7 @@ body {
       
       <!-- 注册表单 -->
       <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
-        <div class="avatar-upload">
-          <div class="avatar-preview" onclick="document.getElementById('avatarInput').click()">
-            <span class="placeholder" id="avatarPlaceholder">📷</span>
-            <img id="avatarPreview" style="display: none;">
-          </div>
-          <div class="avatar-upload-text">
-            <p>点击上传头像</p>
-            <span>支持 JPG、PNG、GIF、WebP，最大 2MB</span>
-          </div>
-          <input type="file" id="avatarInput" accept="image/*" style="display: none;" onchange="previewAvatar(this)">
-        </div>
-        
+
         <div class="form-group">
           <label>昵称</label>
           <input type="text" class="form-input" id="registerNickname" placeholder="2-20个字符" required minlength="2" maxlength="20">
@@ -525,18 +436,6 @@ function hideMessage() {
   document.getElementById('message').className = 'message';
 }
 
-// 预览头像
-function previewAvatar(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('avatarPreview').src = e.target.result;
-      document.getElementById('avatarPreview').style.display = 'block';
-      document.getElementById('avatarPlaceholder').style.display = 'none';
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-}
 
 // 处理登录
 async function handleLogin(e) {
@@ -588,7 +487,6 @@ async function handleRegister(e) {
   const nickname = document.getElementById('registerNickname').value.trim();
   const password = document.getElementById('registerPassword').value;
   const confirmPassword = document.getElementById('confirmPassword').value;
-  const avatarInput = document.getElementById('avatarInput');
   
   if (!nickname || !password) {
     showMessage('请填写所有字段', 'error');
@@ -610,56 +508,10 @@ async function handleRegister(e) {
   btn.textContent = '注册中...';
   
   try {
-    // 先上传头像（如果有）
-    let avatarUrl = '';
-    if (avatarInput.files && avatarInput.files[0]) {
-      const formData = new FormData();
-      formData.append('avatar', avatarInput.files[0]);
-      
-      // 先注册获取token
-      const registerResponse = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname, password, avatar_url: '' })
-      });
-      
-      const registerData = await registerResponse.json();
-      
-      if (!registerData.success) {
-        showMessage(registerData.error || '注册失败', 'error');
-        return;
-      }
-      
-      // 上传头像
-      const avatarResponse = await fetch('/api/auth/avatar', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + registerData.token },
-        body: formData
-      });
-      
-      const avatarData = await avatarResponse.json();
-      
-      if (avatarData.success) {
-        avatarUrl = avatarData.avatar_url;
-        registerData.user.avatar_url = avatarUrl;
-      }
-      
-      localStorage.setItem('token', registerData.token);
-      localStorage.setItem('user', JSON.stringify(registerData.user));
-      showMessage('注册成功！', 'success');
-      
-      setTimeout(() => {
-        showUserCard(registerData.user);
-      }, 500);
-      
-      return;
-    }
-    
-    // 没有头像，直接注册
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nickname, password, avatar_url: avatarUrl })
+      body: JSON.stringify({ nickname, password })
     });
     
     const data = await response.json();
@@ -689,15 +541,6 @@ function showUserCard(user) {
   
   document.getElementById('userNickname').textContent = user.nickname;
   document.getElementById('userId').textContent = 'ID: ' + user.id;
-  
-  if (user.avatar_url) {
-    const avatarEl = document.getElementById('userAvatar');
-    avatarEl.textContent = '';
-    const img = document.createElement('img');
-    img.src = user.avatar_url;
-    img.alt = '头像';
-    avatarEl.appendChild(img);
-  }
 }
 
 // 检查登录状态
@@ -738,8 +581,6 @@ async function logout() {
   // 清空表单
   document.getElementById('loginForm').reset();
   document.getElementById('registerForm').reset();
-  document.getElementById('avatarPreview').style.display = 'none';
-  document.getElementById('avatarPlaceholder').style.display = 'block';
   
   switchTab('login');
   showMessage('已退出登录', 'success');
