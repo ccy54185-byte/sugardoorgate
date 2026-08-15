@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 - 唐门 SUGARDOOR</title>
+<style>
+:root {
+  --ink: #0b0b0d;
+  --ink-2: #141416;
+  --ink-3: #1b1b1e;
+  --paper: #f5f5f7;
+  --gold: #c9a227;
+  --gold-soft: #e4c866;
+  --cinnabar: #a3272f;
+  --jade: #3d5849;
+  --muted: #86868b;
+  --glass-bg: rgba(18, 18, 24, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --radius: 20px;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 100vh;
+}
+
+.admin-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-header h1 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-header .seal {
+  width: 36px;
+  height: 36px;
+  border: 2px solid var(--gold);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.back-link {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s;
+}
+.back-link:hover { color: var(--gold); }
+
+.admin-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--paper);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title .badge {
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pending-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pending-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color 0.3s;
+}
+.pending-card:hover { border-color: rgba(201, 162, 39, 0.2); }
+
+.pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pending-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.pending-role {
+  font-size: 13px;
+  color: var(--gold);
+  background: rgba(201, 162, 39, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.pending-meta {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+
+.pending-title {
+  font-size: 14px;
+  color: var(--paper);
+  margin-bottom: 4px;
+}
+
+.pending-bio {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.btn-approve {
+  background: var(--jade);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-approve:hover { background: #4a6b56; }
+
+.btn-reject {
+  background: rgba(163, 39, 47, 0.2);
+  color: var(--cinnabar);
+  border: 1px solid rgba(163, 39, 47, 0.3);
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.btn-reject:hover { background: rgba(163, 39, 47, 0.3); }
+
+.not-logged-in {
+  text-align: center;
+  padding: 80px 32px;
+}
+.not-logged-in h2 {
+  font-size: 1.2rem;
+  margin-bottom: 12px;
+  color: var(--paper);
+}
+.not-logged-in p {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.not-logged-in a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 500;
+}
+.not-logged-in a:hover { text-decoration: underline; }
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--jade);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1000;
+}
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+.toast.error {
+  background: var(--cinnabar);
+}
+</style>
+</head>
+<body>
+
+<div class="admin-header">
+  <h1><span class="seal">管</span>唐门后台管理</h1>
+  <a href="index.html" class="back-link">← 返回首页</a>
+</div>
+
+<div class="admin-content" id="adminContent">
+  <div class="empty-state">加载中...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const token = localStorage.getItem('token');
+const adminContent = document.getElementById('adminContent');
+
+if (!token) {
+  adminContent.innerHTML = `
+    <div class="not-logged-in">
+      <h2>请先登录</h2>
+      <p>需要登录后才能访问后台管理</p>
+      <a href="login.html">前往登录 →</a>
+    </div>
+  `;
+} else {
+  loadPendingRegistrations();
+}
+
+async function loadPendingRegistrations() {
+  try {
+    const response = await fetch('/api/members?status=pending', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await response.json();
+    
+    if (!data.success) {
+      adminContent.innerHTML = '<div class="empty-state">加载失败：' + (data.error || '未知错误') + '</div>';
+      return;
+    }
+
+    const members = data.members || [];
+    
+    if (members.length === 0) {
+      adminContent.innerHTML = `
+        <div class="section-title">待审核登记</div>
+        <div class="empty-state">暂无待审核的身份登记</div>
+      `;
+      return;
+    }
+
+    adminContent.innerHTML = `
+      <div class="section-title">待审核登记 <span class="badge">${members.length}</span></div>
+      <div class="pending-list">
+        ${members.map(m => `
+          <div class="pending-card" id="card-${m.id}">
+            <div class="pending-header">
+              <span class="pending-name">${escapeHtml(m.nickname)}</span>
+              <span class="pending-role">${escapeHtml(m.role)}</span>
+            </div>
+            ${m.title ? `<div class="pending-title">头衔：${escapeHtml(m.title)}</div>` : ''}
+            ${m.bio ? `<div class="pending-bio">${escapeHtml(m.bio)}</div>` : ''}
+            <div class="pending-meta">提交时间：${formatTime(m.created_at)}</div>
+            <div class="pending-actions">
+              <button class="btn-approve" onclick="handleAction(${m.id}, 'approve')">通过</button>
+              <button class="btn-reject" onclick="handleAction(${m.id}, 'reject')">拒绝</button>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } catch (error) {
+    adminContent.innerHTML = '<div class="empty-state">网络错误，请重试</div>';
+  }
+}
+
+async function handleAction(registrationId, action) {
+  const actionText = action === 'approve' ? '通过' : '拒绝';
+  if (!confirm('确定要' + actionText + '此登记吗？')) return;
+
+  try {
+    const response = await fetch('/api/members', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ registration_id: registrationId, action })
+    });
+    const data = await response.json();
+
+    if (data.success) {
+      showToast('已' + actionText);
+      document.getElementById('card-' + registrationId).remove();
+      // 重新加载列表
+      loadPendingRegistrations();
+    } else {
+      showToast(data.error || '操作失败', true);
+    }
+  } catch (error) {
+    showToast('网络错误', true);
+  }
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function formatTime(dateStr) {
+  if (!dateStr) return '';
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now - date;
+  
+  if (diff < 60000) return '刚刚';
+  if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+  if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+  
+  return date.toLocaleDateString('zh-CN');
+}
+
+function showToast(message, isError = false) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = 'toast' + (isError ? ' error' : '');
+  setTimeout(() => toast.classList.add('show'), 10);
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+</script>
+
+</body>
+</html>
