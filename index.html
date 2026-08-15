@@ -2299,7 +2299,10 @@ document.addEventListener('DOMContentLoaded', () => {
         
         if (data.success && data.user) {
           // 已登录，显示用户信息
-          loginNavItem.innerHTML = '<a href="login.html" class="nav-cta">' + data.user.nickname + '</a>';
+                    const avatarHtml = data.user.avatar_url
+            ? '<img src="' + data.user.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid var(--gold);">'
+            : '<span style="width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--ink);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">' + data.user.nickname.charAt(0) + '</span>';
+          loginNavItem.innerHTML = '<a href="login.html" style="padding:6px;display:flex;align-items:center;" title="' + data.user.nickname + '">' + avatarHtml + '</a>';
           // 显示通知图标
           notifNavItem.style.display = 'block';
           // 加载通知
@@ -2372,6 +2375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 </div>
 </body>
 </html>
+
 
 
 

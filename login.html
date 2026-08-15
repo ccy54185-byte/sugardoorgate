@@ -383,6 +383,16 @@ body {
     font-size: 24px;
   }
 }
+
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 </style>
 </head>
 <body>
@@ -435,6 +445,9 @@ body {
         </div>
         
         <button type="submit" class="submit-btn" id="loginBtn">登录</button>
+        <div style="text-align:center;margin-top:12px;">
+          <a href="javascript:void(0)" onclick="showForgotModal()" style="color:var(--muted);font-size:13px;text-decoration:none;transition:color 0.3s;">忘记密码？</a>
+        </div>
       </form>
       
       <!-- 注册表单 -->
@@ -733,6 +746,65 @@ async function logout() {
 }
 </script>
 
+
+<!-- 忘记密码弹窗 -->
+<div class="modal-overlay" id="forgotModal" style="display:none;">
+  <div style="background:var(--glass-bg);backdrop-filter:blur(40px);border:1px solid var(--glass-border);border-radius:20px;padding:40px;width:90%;max-width:400px;position:relative;">
+    <h2 style="font-size:20px;margin-bottom:20px;color:var(--gold);">找回密码</h2>
+    <p style="color:var(--muted);font-size:14px;margin-bottom:20px;">输入您的昵称，系统将发送密码重置通知到您的账号。</p>
+    <div class="message" id="forgotMessage"></div>
+    <div class="form-group">
+      <label>昵称</label>
+      <input type="text" class="form-input" id="forgotNickname" placeholder="请输入注册时的昵称" required>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button onclick="closeForgotModal()" style="flex:1;padding:12px;border-radius:10px;font-size:14px;cursor:pointer;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);color:var(--paper);">取消</button>
+      <button onclick="submitForgot()" id="forgotBtn" style="flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,var(--gold),var(--gold-soft));color:var(--ink);">发送</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showForgotModal() {
+  document.getElementById('forgotModal').style.display = 'flex';
+}
+function closeForgotModal() {
+  document.getElementById('forgotModal').style.display = 'none';
+  document.getElementById('forgotMessage').className = 'message';
+}
+async function submitForgot() {
+  const nickname = document.getElementById('forgotNickname').value.trim();
+  if (!nickname) {
+    document.getElementById('forgotMessage').textContent = '请输入昵称';
+    document.getElementById('forgotMessage').className = 'message error';
+    return;
+  }
+  const btn = document.getElementById('forgotBtn');
+  btn.disabled = true;
+  btn.textContent = '发送中...';
+  try {
+    const response = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname })
+    });
+    const data = await response.json();
+    if (data.success) {
+      document.getElementById('forgotMessage').innerHTML = '已发送重置通知！请<a href="login.html" style="color:var(--gold);">登录</a>后在通知中查看重置链接。';
+      document.getElementById('forgotMessage').className = 'message success';
+    } else {
+      document.getElementById('forgotMessage').textContent = data.error || '发送失败';
+      document.getElementById('forgotMessage').className = 'message error';
+    }
+  } catch (error) {
+    document.getElementById('forgotMessage').textContent = '网络错误';
+    document.getElementById('forgotMessage').className = 'message error';
+  }
+  btn.disabled = false;
+  btn.textContent = '发送';
+}
+</script>
 </body>
 </html>
+
 
