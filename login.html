@@ -678,7 +678,12 @@ function showUserCard(user) {
   document.getElementById('userId').textContent = 'ID: ' + user.id;
   
   if (user.avatar_url) {
-    document.getElementById('userAvatar').innerHTML = '<img src="' + user.avatar_url + '" alt="头像">';
+    const avatarEl = document.getElementById('userAvatar');
+    avatarEl.textContent = '';
+    const img = document.createElement('img');
+    img.src = user.avatar_url;
+    img.alt = '头像';
+    avatarEl.appendChild(img);
   }
 }
 
@@ -730,3 +735,4 @@ async function logout() {
 
 </body>
 </html>
+
