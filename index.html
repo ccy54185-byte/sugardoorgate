@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>唐门 SUGARDOOR | 以器载道，以门会友</title>
+<style>
+/* ═══════════════════════════════════════════════════════
+   唐门官方网站 — 终极融合版
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --ink: #0b0b0d;
+  --ink-2: #141416;
+  --ink-3: #1b1b1e;
+  --paper: #f5f5f7;
+  --gold: #c9a227;
+  --gold-soft: #e4c866;
+  --cinnabar: #a3272f;
+  --jade: #3d5849;
+  --jade-soft: #6c8c76;
+  --muted: #86868b;
+  --muted-dark: #59564f;
+  --glass-bg: rgba(18, 18, 24, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --radius: 24px;
+  --transition: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, 'SF Pro Display', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--ink);
+  color: var(--paper);
+  overflow-x: hidden;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection { background: var(--gold); color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── 背景流体光晕 ────────────────────────────────────── */
+.ambient-bg {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  z-index: -2;
+  overflow: hidden;
+  background: #000;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: orbFloat 25s infinite alternate ease-in-out;
+}
+
+.orb-1 { width: 50vw; height: 50vw; background: radial-gradient(circle, #2a1a0a, transparent 70%); top: -10%; left: -10%; }
+.orb-2 { width: 60vw; height: 60vw; background: radial-gradient(circle, #0a1a2a, transparent 70%); bottom: -20%; right: -10%; animation-delay: -5s; }
+.orb-3 { width: 35vw; height: 35vw; background: radial-gradient(circle, #1a0a0a, transparent 70%); top: 40%; left: 50%; animation-duration: 30s; }
+
+@keyframes orbFloat {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(8vw, 12vh) scale(1.15); }
+  100% { transform: translate(-5vw, 5vh) scale(0.95); }
+}
+
+/* ── 3D场景容器 ──────────────────────────────────────── */
+#scene-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+}
+
+/* ── 导航栏 ─────────────────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 64px;
+  background: rgba(11, 11, 13, 0.6);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.1);
+  opacity: 0;
+  transform: translateY(-12px);
+  transition: opacity 0.8s ease, transform 0.8s ease, background 0.4s;
+}
+
+nav.show { opacity: 1; transform: translateY(0); }
+
+.nav-mark {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gold);
+  text-decoration: none;
+}
+
+.nav-seal {
+  width: 28px; height: 28px;
+  border: 1.5px solid var(--gold);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.nav-links {
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  color: var(--muted);
+  align-items: center;
+}
+
+.nav-item { position: relative; }
+
+.nav-item > a, .nav-item > button {
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.3s;
+  border-radius: 6px;
+}
+
+.nav-item > a:hover, .nav-item:hover > button { color: var(--gold-soft); }
+.nav-item .caret { font-size: 9px; opacity: 0.6; }
+
+.nav-cta {
+  border: 1px solid var(--gold) !important;
+  color: var(--gold) !important;
+  padding: 8px 18px !important;
+  border-radius: 2px !important;
+  font-family: 'SF Mono', 'Cascadia Code', monospace;
+  letter-spacing: 1.5px;
+  font-size: 11px !important;
+  transition: all 0.3s;
+}
+
+.nav-cta:hover {
+  background: var(--gold);
+  color: var(--ink) !important;
+}
+
+.dropdown {
+  position: absolute;
+  top: 100%; left: 0;
+  min-width: 240px;
+  padding: 10px;
+  background: rgba(20, 20, 22, 0.97);
+  border: 1px solid rgba(201, 162, 39, 0.14);
+  border-radius: 12px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.25s, transform 0.25s, visibility 0.25s;
+}
+
+.nav-item:hover .dropdown { opacity: 1; visibility: visible; transform: translateY(0); }
+
+.dropdown a {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: var(--paper);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.dropdown a:hover { background: rgba(201, 162, 39, 0.1); }
+.dropdown a small { font-family: 'SF Mono', monospace; font-size: 10.5px; letter-spacing: 1px; color: var(--muted); }
+
+/* ── 英雄区 — 开门动画 ──────────────────────────────── */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 640px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.door {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 50%;
+  background: linear-gradient(180deg, #16151a 0%, #0b0b0d 55%, #08080a 100%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.6);
+}
+
+.door::before { content: ''; position: absolute; inset: 26px; border: 1px solid rgba(201, 162, 39, 0.3); }
+.door::after { content: ''; position: absolute; inset: 44px; border: 1px solid rgba(201, 162, 39, 0.12); }
+
+.door-l { left: 0; transition: transform 1.8s cubic-bezier(0.76, 0, 0.24, 1); }
+.door-r { right: 0; transition: transform 1.8s cubic-bezier(0.76, 0, 0.24, 1); }
+
+.door-l .ring { right: 38px; }
+.door-r .ring { left: 38px; }
+
+.ring {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.3);
+}
+
+.doors-open .door-l { transform: translateX(-101%); }
+.doors-open .door-r { transform: translateX(101%); }
+
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201, 162, 39, 0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity 1.4s ease 0.6s;
+}
+
+.doors-open ~ .hero-glow { opacity: 1; }
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 0 24px;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 1.2s ease 0.9s, transform 1.2s ease 0.9s;
+}
+
+.hero-content.reveal { opacity: 1; transform: translateY(0); }
+
+.hero-eyebrow {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--gold);
+  margin-bottom: 24px;
+  text-transform: uppercase;
+}
+
+.hero-title {
+  font-size: clamp(52px, 10vw, 120px);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #fff 30%, var(--gold-soft) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-title .en {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(14px, 2.2vw, 24px);
+  letter-spacing: 12px;
+  margin-top: 16px;
+  background: linear-gradient(90deg, var(--muted), var(--muted-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  margin-top: 28px;
+  font-size: clamp(15px, 1.6vw, 18px);
+  color: var(--muted);
+  font-weight: 300;
+  letter-spacing: 1px;
+  max-width: 520px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.8;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: var(--muted-dark);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 1s ease 1.8s;
+}
+
+.hero-scroll.reveal { opacity: 1; }
+
+.scroll-line {
+  width: 1px;
+  height: 34px;
+  background: linear-gradient(var(--gold), transparent);
+  animation: scrollPulse 2.2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
+/* ── 通用Section ────────────────────────────────────── */
+section { position: relative; padding: 150px 5vw; }
+.section-dark { background: var(--ink); }
+.section-ink2 { background: var(--ink-2); }
+.section-paper { background: var(--paper); color: var(--ink); }
+
+.max { max-width: 1180px; margin: 0 auto; }
+
+.eyebrow {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 28px;
+  color: var(--gold);
+}
+
+.section-paper .eyebrow { color: var(--cinnabar); }
+
+.seal-tick {
+  width: 8px; height: 8px;
+  background: currentColor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+h2.h-serif {
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: 1px;
+  margin-bottom: 24px;
+}
+
+p.lead {
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.9;
+  color: var(--muted);
+  font-weight: 300;
+  max-width: 640px;
+}
+
+.section-paper p.lead { color: #5a5650; }
+
+.section-head-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 70px;
+}
+
+/* ── 滚动动画 ────────────────────────────────────────── */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(46px);
+  transition: opacity 1s cubic-bezier(0.2, 0.7, 0.3, 1), transform 1s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+.reveal-up.in { opacity: 1; transform: translateY(0); }
+
+.stagger .reveal-up:nth-child(1) { transition-delay: 0s; }
+.stagger .reveal-up:nth-child(2) { transition-delay: 0.08s; }
+.stagger .reveal-up:nth-child(3) { transition-delay: 0.16s; }
+.stagger .reveal-up:nth-child(4) { transition-delay: 0.24s; }
+.stagger .reveal-up:nth-child(5) { transition-delay: 0.32s; }
+.stagger .reveal-up:nth-child(6) { transition-delay: 0.4s; }
+.stagger .reveal-up:nth-child(7) { transition-delay: 0.48s; }
+
+/* ── 起源 ────────────────────────────────────────────── */
+.origin-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 80px;
+  align-items: start;
+  margin-top: 60px;
+}
+
+.origin-text p { margin-bottom: 22px; }
+
+.timeline { border-left: 1px solid rgba(163, 39, 47, 0.25); padding-left: 32px; }
+
+.t-item { position: relative; padding-bottom: 44px; }
+.t-item:last-child { padding-bottom: 0; }
+
+.t-item::before {
+  content: '';
+  position: absolute;
+  left: -38px; top: 4px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--paper);
+  border: 2px solid var(--cinnabar);
+}
+
+.t-item .t-label {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--cinnabar);
+  margin-bottom: 8px;
+}
+
+.t-item .t-body { font-size: 15px; line-height: 1.75; color: #5a5650; }
+.t-item .t-title { font-weight: 700; font-size: 19px; margin-bottom: 6px; color: var(--ink); }
+
+/* ── 门派架构 ────────────────────────────────────────── */
+.rank-list { display: flex; flex-direction: column; }
+
+.rank-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 1.4fr;
+  gap: 36px;
+  align-items: center;
+  padding: 30px 24px;
+  border-top: 1px solid rgba(201, 162, 39, 0.12);
+  transition: background 0.4s, padding-left 0.4s;
+}
+
+.rank-row:last-child { border-bottom: 1px solid rgba(201, 162, 39, 0.12); }
+.rank-row:hover { background: rgba(201, 162, 39, 0.04); padding-left: 34px; }
+
+.rank-tier {
+  font-family: 'SF Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--muted-dark);
+}
+
+.rank-tier span {
+  display: block;
+  color: var(--gold);
+  font-size: 22px;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.rank-name {
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.rank-name small {
+  display: block;
+  font-family: 'SF Mono', monospace;
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  color: var(--muted);
+  margin-top: 5px;
+  text-transform: uppercase;
+}
+
+.rank-desc { font-size: 14px; line-height: 1.8; color: var(--muted); font-weight: 300; }
+
+/* ── 练器阁 Tabs ─────────────────────────────────────── */
+.tab-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 50px; }
+
+.tab-btn {
+  padding: 12px 22px;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  border-radius: 30px;
+  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  background: none;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.tab-btn.active { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+.tab-btn:hover:not(.active) { border-color: var(--gold); color: var(--gold-soft); }
+
+.tab-panels { position: relative; min-height: 280px; }
+.tab-panel { display: none; }
+.tab-panel.active {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(201, 162, 39, 0.08);
+  border: 1px solid rgba(201, 162, 39, 0.1);
+  animation: tabFadeIn 0.4s ease;
+}
+
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.item-card {
+  background: var(--ink);
+  padding: 32px 26px;
+  transition: background 0.3s;
+}
+
+.item-card:hover { background: var(--ink-3); }
+
+.item-card .rank-badge {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 14px;
+}
+
+.item-card h4 { font-weight: 700; font-size: 18px; margin-bottom: 10px; }
+.item-card p { font-size: 13px; line-height: 1.75; color: var(--muted); font-weight: 300; }
+
+/* ── 拍卖会 ──────────────────────────────────────────── */
+.auction-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.lot {
+  background: var(--paper);
+  padding: 36px 28px;
+  transition: background 0.3s;
+  position: relative;
+}
+
+.lot:hover { background: #efe8d8; }
+
+.lot .lot-no {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--cinnabar);
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.lot h4 { font-weight: 700; font-size: 19px; margin-bottom: 10px; color: var(--ink); }
+.lot p { font-size: 13px; line-height: 1.75; color: #5b564b; font-weight: 300; margin-bottom: 18px; }
+
+.lot .price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-top: 1px solid rgba(163, 39, 47, 0.12);
+  padding-top: 14px;
+}
+
+.lot .price { font-weight: 700; font-size: 17px; color: var(--cinnabar); }
+.lot .price small { font-family: 'SF Mono', monospace; font-size: 9px; color: var(--muted); font-weight: 400; }
+.lot .status { font-family: 'SF Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--jade); }
+
+/* ── 发布会 ──────────────────────────────────────────── */
+.launch-hero {
+  padding: 52px 40px;
+  border: 1px solid rgba(201, 162, 39, 0.14);
+  border-radius: 16px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(201, 162, 39, 0.06), transparent 60%);
+}
+
+.launch-hero .tag {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.launch-hero h3 { font-weight: 800; font-size: clamp(26px, 3.2vw, 42px); margin-bottom: 14px; letter-spacing: 0.5px; }
+.launch-hero p { color: var(--muted); font-size: 15px; line-height: 1.8; max-width: 540px; font-weight: 300; }
+
+.launch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 18px; }
+
+.launch-card {
+  border: 1px solid rgba(201, 162, 39, 0.12);
+  border-radius: 14px;
+  padding: 30px 24px;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.launch-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+
+.launch-card .spec {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--muted-dark);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.launch-card h4 { font-weight: 700; font-size: 18px; margin-bottom: 10px; }
+.launch-card p { font-size: 13px; line-height: 1.75; color: var(--muted); font-weight: 300; }
+
+/* ── 门规 ────────────────────────────────────────────── */
+.tenet-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: rgba(0, 0, 0, 0.06);
+  margin-top: 60px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tenet {
+  background: var(--paper);
+  padding: 44px 30px;
+  transition: background 0.4s;
+}
+
+.tenet:hover { background: #efe8d8; }
+
+.tenet .glyph {
+  width: 40px; height: 40px;
+  border: 1px solid var(--cinnabar);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--cinnabar);
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.tenet h3 { font-size: 19px; font-weight: 700; margin-bottom: 10px; color: var(--ink); }
+.tenet p { font-size: 13.5px; line-height: 1.8; color: #5b564b; font-weight: 300; }
+
+/* ── 合作伙伴 ────────────────────────────────────────── */
+.alliance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 60px; }
+
+.ally-card {
+  border: 1px solid rgba(61, 88, 73, 0.3);
+  border-radius: 16px;
+  padding: 42px 36px;
+  background: linear-gradient(160deg, rgba(61, 88, 73, 0.08), transparent 55%);
+  transition: border-color 0.3s;
+}
+
+.ally-card:hover { border-color: var(--jade-soft); }
+
+.ally-mark {
+  width: 52px; height: 52px;
+  border-radius: 10px;
+  border: 1.5px solid var(--jade-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: var(--jade-soft);
+  margin-bottom: 24px;
+}
+
+.ally-type {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--jade-soft);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.ally-card h3 { font-weight: 700; font-size: 24px; margin-bottom: 14px; }
+.ally-card p { font-size: 14px; line-height: 1.85; color: var(--muted); font-weight: 300; }
+
+/* ── 财政白皮书 ──────────────────────────────────────── */
+.crypto-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  text-align: left;
+}
+
+.crypto-table th, .crypto-table td {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.9rem;
+}
+
+.crypto-table th { color: var(--muted); font-weight: 500; font-size: 0.8rem; letter-spacing: 0.08em; }
+.trend-up { color: var(--jade-soft); font-weight: 600; }
+.trend-down { color: var(--cinnabar); font-weight: 600; }
+
+/* ── 晋升试炼 ────────────────────────────────────────── */
+.trial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 60px; }
+
+.trial-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 40px 32px;
+  backdrop-filter: blur(20px);
+  transition: border-color 0.3s;
+}
+
+.trial-card:hover { border-color: rgba(201, 162, 39, 0.2); }
+
+.trial-card .trial-tag {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: block;
+}
+
+.trial-card h3 { font-weight: 700; font-size: 20px; margin-bottom: 14px; }
+.trial-card p { font-size: 14px; line-height: 1.8; color: var(--muted); font-weight: 300; }
+.trial-card strong { color: var(--paper); font-weight: 600; }
+
+/* ── 加入唐门 ────────────────────────────────────────── */
+.join-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 60px; align-items: start; }
+
+.position-list { display: flex; flex-direction: column; }
+
+.position {
+  padding: 24px 4px;
+  border-top: 1px solid rgba(163, 39, 47, 0.14);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.position:last-child { border-bottom: 1px solid rgba(163, 39, 47, 0.14); }
+
+.position .p-name { font-weight: 700; font-size: 17px; }
+.position .p-desc { font-size: 12.5px; color: #6b665a; margin-top: 3px; font-weight: 300; }
+
+.position .p-tag {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--cinnabar);
+  border: 1px solid var(--cinnabar);
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.contact-card {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 18px;
+  padding: 46px 38px;
+  border: 1px solid rgba(201, 162, 39, 0.18);
+}
+
+.contact-card .eyebrow { color: var(--gold); margin-bottom: 18px; }
+.contact-card h3 { font-weight: 700; font-size: 22px; margin-bottom: 14px; }
+.contact-card p { font-size: 14px; color: var(--muted); line-height: 1.85; font-weight: 300; margin-bottom: 30px; }
+
+.email-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+
+.email-box .addr {
+  font-family: 'SF Mono', monospace;
+  font-size: 13.5px;
+  letter-spacing: 0.3px;
+  color: var(--gold-soft);
+  word-break: break-all;
+}
+
+.copy-btn {
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--paper);
+  border: 1px solid var(--muted-dark);
+  padding: 8px 14px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  background: none;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+
+.copy-btn:hover { border-color: var(--gold); color: var(--gold); }
+.copy-btn.copied { border-color: var(--jade-soft); color: var(--jade-soft); }
+
+.join-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+
+.cta-btn {
+  display: inline-block;
+  padding: 14px 34px;
+  border: 1px solid var(--gold);
+  font-family: 'SF Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  border-radius: 2px;
+  transition: all 0.4s;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.cta-btn:hover { background: var(--gold); color: var(--ink); }
+.cta-btn.ghost { border-color: rgba(201, 162, 39, 0.35); color: var(--muted); }
+.cta-btn.ghost:hover { background: transparent; border-color: var(--gold); color: var(--gold); }
+
+/* ── 页脚 ────────────────────────────────────────────── */
+footer {
+  padding: 50px 5vw 38px;
+  background: var(--ink);
+  border-top: 1px solid rgba(201, 162, 39, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+footer .f-mark { font-size: 14px; letter-spacing: 2px; color: var(--muted); font-weight: 600; }
+footer .f-note { font-family: 'SF Mono', monospace; font-size: 10px; letter-spacing: 1.5px; color: var(--muted-dark); }
+
+/* ── 响应式 ──────────────────────────────────────────── */
+@media (max-width: 980px) {
+  .nav-links { display: none; }
+  .origin-grid { grid-template-columns: 1fr; gap: 50px; }
+  .rank-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 12px; }
+  .tab-panel.active { grid-template-columns: repeat(2, 1fr); }
+  .auction-grid { grid-template-columns: repeat(2, 1fr); }
+  .launch-grid { grid-template-columns: 1fr; }
+  .tenet-grid { grid-template-columns: repeat(2, 1fr); }
+  .alliance-grid { grid-template-columns: 1fr; }
+  .join-wrap { grid-template-columns: 1fr; gap: 50px; }
+  .trial-grid { grid-template-columns: 1fr; }
+  .hero-title { font-size: 3.5rem; }
+}
+
+@media (max-width: 560px) {
+  .tab-panel.active { grid-template-columns: 1fr; }
+  .auction-grid { grid-template-columns: 1fr; }
+  .tenet-grid { grid-template-columns: 1fr; }
+  section { padding: 100px 20px; }
+}
+
+/* ── 系统状态指示器 ──────────────────────────────────── */
+.system-status {
+  position: fixed;
+  bottom: 16px;
+  left: 24px;
+  font-family: 'SF Mono', monospace;
+  font-size: 10px;
+  color: var(--muted-dark);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 5px; height: 5px;
+  background: var(--gold);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(201, 162, 39, 0.5);
+}
+
+/* ── 通知系统 ──────────────────────────────────────── */
+.notif-bell-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 8px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.3s;
+}
+
+.notif-bell-btn:hover {
+  color: var(--gold-soft);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.notif-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: var(--cinnabar);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.notif-panel {
+  position: absolute;
+  top: 100%;
+  right: -50px;
+  width: 360px;
+  max-height: 480px;
+  background: var(--ink-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(40px);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: all 0.25s var(--transition);
+  z-index: 1001;
+  overflow: hidden;
+}
+
+.notif-panel.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(8px);
+}
+
+.notif-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.notif-mark-all {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.notif-mark-all:hover {
+  background: rgba(201, 162, 39, 0.1);
+}
+
+.notif-panel-body {
+  max-height: 400px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.notif-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.notif-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.notif-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notif-item.unread {
+  background: rgba(201, 162, 39, 0.05);
+  border-left: 3px solid var(--gold);
+}
+
+.notif-item-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.notif-item-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--paper);
+}
+
+.notif-item-time {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.notif-item-content {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.notif-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.notif-action-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
+
+.notif-action-btn.confirm {
+  background: var(--jade);
+  color: #fff;
+}
+
+.notif-action-btn.confirm:hover {
+  background: var(--jade-soft);
+}
+
+.notif-action-btn.reject {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--paper);
+}
+
+.notif-action-btn.reject:hover {
+  border-color: var(--cinnabar);
+  color: var(--cinnabar);
+}
+
+.notif-type-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  margin-right: 10px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.notif-type-icon.guarantor { background: rgba(201, 162, 39, 0.15); }
+.notif-type-icon.application { background: rgba(61, 88, 73, 0.2); }
+.notif-type-icon.status { background: rgba(134, 134, 139, 0.15); }
+
+/* ── 申请弹窗 ──────────────────────────────────────── */
+.apply-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.apply-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.apply-modal {
+  background: var(--ink-2);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 32px;
+  width: 90%;
+  max-width: 440px;
+  transform: translateY(20px);
+  transition: transform 0.3s var(--transition);
+}
+
+.apply-modal-overlay.show .apply-modal {
+  transform: translateY(0);
+}
+
+.apply-modal h3 {
+  font-size: 20px;
+  margin-bottom: 24px;
+  color: var(--gold);
+}
+
+.apply-form-group {
+  margin-bottom: 20px;
+}
+
+.apply-form-group label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.apply-form-group input,
+.apply-form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  color: var(--paper);
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.apply-form-group input:focus,
+.apply-form-group textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.apply-form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.apply-form-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.apply-btns {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.apply-btns button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+}
+
+.apply-submit-btn {
+  background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+  color: var(--ink);
+}
+
+.apply-submit-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.3);
+}
+
+.apply-cancel-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--paper);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.apply-cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 768px) {
+  .notif-panel {
+    width: 300px;
+    right: -20px;
+  }
+  
+  .apply-modal {
+    width: 95%;
+    padding: 24px;
+  }
+}
+
+/* ── 成员列表 ──────────────────────────────────────── */
+.rank-section { position: relative; }
+.rank-row { cursor: pointer; display: grid; grid-template-columns: 100px 1fr 1.4fr auto; gap: 36px; align-items: center; }
+.rank-toggle { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; }
+.toggle-arrow { font-size: 10px; transition: transform 0.3s; display: inline-block; }
+.rank-row.expanded .toggle-arrow { transform: rotate(90deg); }
+.member-count { font-family: 'SF Mono', monospace; font-size: 12px; }
+.member-list { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.3s ease; padding: 0 24px; }
+.member-list.expanded { max-height: 2000px; padding: 16px 24px; }
+.member-card { display: flex; align-items: center; gap: 16px; padding: 12px 16px; border-radius: 12px; background: rgba(255,255,255,0.03); margin-bottom: 8px; }
+.member-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(201, 162, 39, 0.15); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
+.member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.member-avatar .avatar-placeholder { color: var(--gold); font-weight: 700; font-size: 16px; }
+.member-info { flex: 1; }
+.member-nickname { font-weight: 600; font-size: 15px; }
+.member-title { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.member-bio { font-size: 13px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+.member-empty { text-align: center; color: var(--muted); font-size: 13px; padding: 16px; }
+
+/* ── 登记弹窗 ──────────────────────────────────────── */
+.register-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); z-index: 2000; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: all 0.3s; }
+.register-modal-overlay.show { opacity: 1; visibility: visible; }
+.register-modal { background: var(--ink-2); border: 1px solid var(--glass-border); border-radius: 20px; padding: 32px; width: 90%; max-width: 440px; transform: translateY(20px); transition: transform 0.3s var(--transition); }
+.register-modal-overlay.show .register-modal { transform: translateY(0); }
+.register-modal h3 { font-size: 20px; margin-bottom: 24px; color: var(--gold); }
+.register-form-group { margin-bottom: 20px; }
+.register-form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; }
+.register-form-group select, .register-form-group input, .register-form-group textarea { width: 100%; padding: 12px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: var(--paper); font-size: 14px; font-family: inherit; transition: border-color 0.3s; }
+.register-form-group select:focus, .register-form-group input:focus, .register-form-group textarea:focus { outline: none; border-color: var(--gold); }
+.register-form-group select option { background: var(--ink-2); }
+.register-form-group textarea { min-height: 60px; resize: vertical; }
+.register-btns { display: flex; gap: 12px; margin-top: 28px; }
+.register-btns button { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.3s; }
+.register-submit-btn { background: linear-gradient(135deg, var(--gold), var(--gold-soft)); color: var(--ink); }
+.register-submit-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(201,162,39,0.3); }
+.register-cancel-btn { background: rgba(255,255,255,0.05); color: var(--paper); border: 1px solid rgba(255,255,255,0.1) !important; }
+.register-cancel-btn:hover { background: rgba(255,255,255,0.1); }
+
+@media (max-width: 768px) {
+  .rank-row { grid-template-columns: 1fr; gap: 8px; padding: 24px 12px; }
+  .rank-toggle { position: absolute; top: 24px; right: 12px; }
+  .register-modal { width: 95%; padding: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- 背景光晕 -->
+<div class="ambient-bg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+</div>
+
+<!-- 系统状态 -->
+<div class="system-status">
+  <span class="status-dot"></span>
+  <span>TANGMEN MATRIX v3.0</span>
+</div>
+
+<!-- 导航栏 -->
+<nav id="nav">
+  <a href="#" class="nav-mark"><span class="nav-seal">唐</span>SUGARDOOR</a>
+  <div class="nav-links">
+    <div class="nav-item">
+      <button type="button">关于唐门 <span class="caret">&#9662;</span></button>
+      <div class="dropdown">
+        <a href="#origin">起源<small>从宿舍到江湖</small></a>
+        <a href="#hierarchy">门派架构<small>七级门内秩序</small></a>
+        <a href="#tenets">门规<small>四条立身之本</small></a>
+      </div>
+    </div>
+    <div class="nav-item">
+      <button type="button">门内动态 <span class="caret">&#9662;</span></button>
+      <div class="dropdown">
+        <a href="#refinery">练器阁<small>兵器 / 丹药 / 秘籍 / 阵法</small></a>
+        <a href="#auction">唐门拍卖会<small>本期在拍拍品</small></a>
+        <a href="#launch">新品发布会<small>年度新物发布</small></a>
+        <a href="#finance">财政白皮书<small>宗门资产报告</small></a>
+      </div>
+    </div>
+    <div class="nav-item"><a href="#alliance">江湖联盟</a></div>
+    <div class="nav-item"><a href="#trial">晋升试炼</a></div>
+    <div class="nav-item"><a href="#join" class="nav-cta">加入唐门</a></div>
+    <div class="nav-item" id="loginNavItem">
+      <a href="login.html" class="nav-cta">登录</a>
+    </div>
+    <div class="nav-item" id="notifNavItem" style="display:none;">
+      <button type="button" id="notifBell" class="notif-bell-btn" onclick="toggleNotifPanel()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-badge" id="notifBadge" style="display:none;">0</span>
+      </button>
+      <div class="notif-panel" id="notifPanel">
+        <div class="notif-panel-header">
+          <span>通知</span>
+          <button onclick="markAllRead()" class="notif-mark-all">全部已读</button>
+        </div>
+        <div class="notif-panel-body" id="notifList">
+          <div class="notif-empty">暂无通知</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══ 英雄区 — 开门动画 ═══ -->
+<section class="hero" id="heroSection">
+  <div class="door door-l"><span class="ring"></span></div>
+  <div class="door door-r"><span class="ring"></span></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content" id="heroContent">
+    <div class="hero-eyebrow">EST. IN A DORM ROOM &nbsp;&middot;&nbsp; STILL OPEN</div>
+    <h1 class="hero-title">唐门<span class="en">Sugardoor</span></h1>
+    <p class="hero-sub">一扇门，推开是江湖。门内，是一群从未散场的人。</p>
+  </div>
+  <div class="hero-scroll" id="heroScroll"><span>SCROLL</span><span class="scroll-line"></span></div>
+</section>
+
+<!-- ═══ 起源 ═══ -->
+<section class="section-paper" id="origin">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>起源 &middot; ORIGIN</div>
+    <h2 class="h-serif reveal-up">江湖，始于一间宿舍</h2>
+    <div class="origin-grid">
+      <div class="origin-text">
+        <p class="lead reveal-up">唐门没有开山立派的仪式，只有几个人在熄灯后的宿舍里，把无聊的深夜，一本正经地过成了江湖。</p>
+        <p class="lead reveal-up">没有门派要正经到底。唐门从第一天起就明白这件事——它是一群朋友共同维护的默契，是把日常的荒诞，认真地供奉起来的地方。门规是玩笑，玩笑是认真的，这就是唐门的底色。</p>
+        <p class="lead reveal-up">从高中的一间宿舍开始，唐门没有随着毕业解散。门内的人换了城市、换了生活，但这扇门，一直留着一条缝，只为对暗号的人打开。</p>
+      </div>
+      <div class="timeline stagger">
+        <div class="t-item reveal-up">
+          <div class="t-label">起</div>
+          <div class="t-title">立门</div>
+          <div class="t-body">几张宿舍床铺，几个爱整活的人，唐门的名号第一次被喊出口，纯属图一乐。</div>
+        </div>
+        <div class="t-item reveal-up">
+          <div class="t-label">承</div>
+          <div class="t-title">建制</div>
+          <div class="t-body">门主、唐主、道官次第设立，唐门第一次有了自己的架构与门规，玩笑开始被认真对待。</div>
+        </div>
+        <div class="t-item reveal-up">
+          <div class="t-label">续</div>
+          <div class="t-title">出宿舍</div>
+          <div class="t-body">毕业各奔东西，唐门却没有跟着解散，反而在各自的城市里，悄悄续了下去。</div>
+        </div>
+        <div class="t-item reveal-up">
+          <div class="t-label">今</div>
+          <div class="t-title">仍在场</div>
+          <div class="t-body">直到今天，唐门依旧在场——练器阁开炉，拍卖会照常，新物照样发布，门还开着。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 门派架构 ═══ -->
+<section class="section-dark" id="hierarchy">
+  <div class="max">
+    <div class="section-head-row">
+      <div>
+        <div class="eyebrow reveal-up"><span class="seal-tick"></span>门派架构 &middot; HIERARCHY</div>
+        <h2 class="h-serif reveal-up" style="max-width: 600px;">一门之内<br>各安其位</h2>
+      </div>
+      <p class="lead reveal-up" style="max-width: 360px;">唐门七级，各司其职。地位有序，情谊无阶——这是唐门唯一认真到底的规矩。</p>
+    </div>
+    <div class="rank-list stagger">
+      <div class="rank-section" data-role="门主">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>壹</span></div>
+          <div class="rank-name">门主<small>Sect Leader</small></div>
+          <div class="rank-desc">一门之主，唐门的最高象征与最终决策者。定门规、立门风，一言而九鼎。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="门主">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="门主"></div>
+      </div>
+      <div class="rank-section" data-role="唐主">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>贰</span></div>
+          <div class="rank-name">唐主<small>Tang Lord</small></div>
+          <div class="rank-desc">与门主并肩而立的另一核心，主掌门内大小事务的实际运转，是唐门真正的定海之人。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="唐主">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="唐主"></div>
+      </div>
+      <div class="rank-section" data-role="道官">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>叁</span></div>
+          <div class="rank-name">道官<small>Dao Official</small></div>
+          <div class="rank-desc">掌律法、执门规，负责裁定门内是非、调解纷争，是唐门秩序的守门人。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="道官">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="道官"></div>
+      </div>
+      <div class="rank-section" data-role="财政管理人员">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>肆</span></div>
+          <div class="rank-name">财政管理人员<small>Treasury</small></div>
+          <div class="rank-desc">掌门内钱粮账目、拍卖会与发布会预算，一分一毫皆入账册，是唐门最不能开玩笑的岗位。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="财政管理人员">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="财政管理人员"></div>
+      </div>
+      <div class="rank-section" data-role="长老">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>伍</span></div>
+          <div class="rank-name">长老<small>Elder</small></div>
+          <div class="rank-desc">德高望重，见证唐门自宿舍而起的全部往事，遇大事参赞门务、一言定音。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="长老">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="长老"></div>
+      </div>
+      <div class="rank-section" data-role="内门弟子">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>陆</span></div>
+          <div class="rank-name">内门弟子<small>Inner Disciple</small></div>
+          <div class="rank-desc">深得门中信任，参与练器阁、拍卖会等核心事务，是唐门日常运转的中坚力量。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="内门弟子">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="内门弟子"></div>
+      </div>
+      <div class="rank-section" data-role="外门弟子">
+        <div class="rank-row reveal-up" onclick="toggleMembers(this)">
+          <div class="rank-tier">TIER<span>柒</span></div>
+          <div class="rank-name">外门弟子<small>Outer Disciple</small></div>
+          <div class="rank-desc">初入唐门之人，门外观礼、门内修行，是唐门薪火相传的起点。</div>
+          <div class="rank-toggle"><span class="toggle-arrow">&#9654;</span><span class="member-count" data-role="外门弟子">0人</span></div>
+        </div>
+        <div class="member-list collapsed" data-role="外门弟子"></div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:32px;">
+      <button class="cta-btn" onclick="openRegisterModal()" id="registerBtn" style="display:none;">身份登记</button>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 练器阁 ═══ -->
+<section class="section-ink2" id="refinery">
+  <div class="max">
+    <div class="section-head-row">
+      <div>
+        <div class="eyebrow reveal-up"><span class="seal-tick"></span>门内设施 &middot; THE REFINERY</div>
+        <h2 class="h-serif reveal-up" style="max-width: 560px;">练器阁<br>门人修行与打磨之所</h2>
+      </div>
+      <p class="lead reveal-up" style="max-width: 360px;">四阁并立，各治一业。门人皆可入阁修行，凭手艺与心得，换一席之地。</p>
+    </div>
+
+    <div class="tab-bar reveal-up" id="tabBar">
+      <button class="tab-btn active" data-tab="weapon">兵器坊</button>
+      <button class="tab-btn" data-tab="elixir">丹药阁</button>
+      <button class="tab-btn" data-tab="manual">秘籍阁</button>
+      <button class="tab-btn" data-tab="array">阵法苑</button>
+    </div>
+
+    <div class="tab-panels reveal-up">
+      <div class="tab-panel active" data-panel="weapon">
+        <div class="item-card"><div class="rank-badge">兵 &middot; 壹</div><h4>抬杠三尺剑</h4><p>唐门内部辩论专用兵器，出鞘必定占理，收鞘从不记仇。</p></div>
+        <div class="item-card"><div class="rank-badge">兵 &middot; 贰</div><h4>阴阳怪气弩</h4><p>射程极远，专克装傻充愣之人，唐门弟子人手一把防身。</p></div>
+        <div class="item-card"><div class="rank-badge">兵 &middot; 叁</div><h4>沉默是金锤</h4><p>不该说的一句不说，该说的一锤定音，道官巡查时最爱佩戴。</p></div>
+      </div>
+      <div class="tab-panel" data-panel="elixir">
+        <div class="item-card"><div class="rank-badge">丹 &middot; 壹</div><h4>打工人续命丹</h4><p>一颗顶三杯，专治周一起不来床，唐门弟子长期备货。</p></div>
+        <div class="item-card"><div class="rank-badge">丹 &middot; 贰</div><h4>戒躺平散</h4><p>服后三日不想摸鱼，效果因人而异，长老服用无效。</p></div>
+        <div class="item-card"><div class="rank-badge">丹 &middot; 叁</div><h4>emo速消丸</h4><p>门内秘制安慰配方，配一场深夜聊天效果翻倍。</p></div>
+      </div>
+      <div class="tab-panel" data-panel="manual">
+        <div class="item-card"><div class="rank-badge">秘 &middot; 壹</div><h4>《熬夜真言》</h4><p>唐门开山之作，记录了创门之夜的全部对话与整活心得。</p></div>
+        <div class="item-card"><div class="rank-badge">秘 &middot; 贰</div><h4>《整活九式》</h4><p>从选题到收尾的完整心法，内门弟子必修，外门弟子选修。</p></div>
+        <div class="item-card"><div class="rank-badge">秘 &middot; 叁</div><h4>《门规释义》</h4><p>道官亲笔批注版，逐条解释四条门规背后的典故与用意。</p></div>
+      </div>
+      <div class="tab-panel" data-panel="array">
+        <div class="item-card"><div class="rank-badge">阵 &middot; 壹</div><h4>饭局站位阵</h4><p>决定谁坐主位、谁买单的经典阵法，唐主亲自坐镇破解。</p></div>
+        <div class="item-card"><div class="rank-badge">阵 &middot; 贰</div><h4>接龙不失联阵</h4><p>确保门内消息一条不漏、一人不掉线的联络阵法。</p></div>
+        <div class="item-card"><div class="rank-badge">阵 &middot; 叁</div><h4>年度聚首阵</h4><p>无论散落何方，每年必有一日全阵启动，门人齐聚一堂。</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 唐门拍卖会 ═══ -->
+<section class="section-paper" id="auction">
+  <div class="max">
+    <div class="section-head-row">
+      <div>
+        <div class="eyebrow reveal-up"><span class="seal-tick"></span>门内活动 &middot; THE AUCTION</div>
+        <h2 class="h-serif reveal-up" style="max-width: 520px;">唐门拍卖会<br>第柒期 &middot; 本期在拍</h2>
+      </div>
+      <p class="lead reveal-up" style="max-width: 360px;">凡练器阁出品、门人珍藏，皆可送拍。竞得者需以「糖分」结算，财政管理人员现场记账。</p>
+    </div>
+    <div class="auction-grid stagger">
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 01</span><span>兵器坊出品</span></div>
+        <h4>初代抬杠三尺剑</h4>
+        <p>门主早期习作，剑身略有磨损，附赠一次"必赢"辩论体验。</p>
+        <div class="price-row"><div class="price">8,000<small> 糖分起</small></div><div class="status">&#9679; 待拍</div></div>
+      </div>
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 02</span><span>秘籍阁孤本</span></div>
+        <h4>《熬夜真言》手抄本</h4>
+        <p>创门之夜原始记录，仅此一份，附长老亲笔批注。</p>
+        <div class="price-row"><div class="price">20,000<small> 糖分起</small></div><div class="status">&#9679; 待拍</div></div>
+      </div>
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 03</span><span>丹药阁限定</span></div>
+        <h4>三年陈酿续命丹</h4>
+        <p>存货仅剩一罐，据传效力随存放年份递增，真伪待考。</p>
+        <div class="price-row"><div class="price">3,600<small> 糖分起</small></div><div class="status">&#9679; 待拍</div></div>
+      </div>
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 04</span><span>门主私藏</span></div>
+        <h4>宿舍上铺使用权（一夜）</h4>
+        <p>唐门最原始的资产之一，象征意义大于实用价值。</p>
+        <div class="price-row"><div class="price">面议<small> 稀缺拍品</small></div><div class="status">&#9679; 议价中</div></div>
+      </div>
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 05</span><span>阵法苑出品</span></div>
+        <h4>年度聚首阵 &middot; 实体阵图</h4>
+        <p>手绘全套聚首流程图，附往届聚首彩蛋若干。</p>
+        <div class="price-row"><div class="price">5,200<small> 糖分起</small></div><div class="status">&#9679; 待拍</div></div>
+      </div>
+      <div class="lot reveal-up">
+        <div class="lot-no"><span>LOT 06</span><span>联盟赠礼</span></div>
+        <h4>麒麟会 &times; 唐门联名信物</h4>
+        <p>两派联盟纪念信物，仅在拍卖会流通，市面绝迹。</p>
+        <div class="price-row"><div class="price">12,000<small> 糖分起</small></div><div class="status">&#9679; 待拍</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 新品发布会 ═══ -->
+<section class="section-dark" id="launch">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>年度盛事 &middot; THE LAUNCH</div>
+    <h2 class="h-serif reveal-up" style="max-width: 560px;">新品发布会</h2>
+    <p class="lead reveal-up" style="margin-bottom: 50px;">唐门每年举办一次发布会，向全门公布练器阁的最新出品，与本年的门务新政。</p>
+
+    <div class="launch-hero reveal-up">
+      <span class="tag">本年度主题发布 &middot; MAIN KEYNOTE</span>
+      <h3>唐门认证 &middot; 至尊夜聊丹</h3>
+      <p>历时数月打磨，练器阁丹药阁年度压轴之作。一颗下肚，深夜话题不断，社恐当场破防——唐门弟子人均必备。</p>
+    </div>
+
+    <div class="launch-grid stagger">
+      <div class="launch-card reveal-up">
+        <div class="spec">发布 &middot; 秘籍阁</div>
+        <h4>《整活九式》修订版</h4>
+        <p>补齐三年来的实战案例，新增「线上整活」专章，内门弟子优先领取。</p>
+      </div>
+      <div class="launch-card reveal-up">
+        <div class="spec">发布 &middot; 阵法苑</div>
+        <h4>年度聚首阵 2.0</h4>
+        <p>支持跨城联动，无论门人身在何处，皆可一阵接入年度聚首。</p>
+      </div>
+      <div class="launch-card reveal-up">
+        <div class="spec">发布 &middot; 门务处</div>
+        <h4>门规释义 &middot; 有声版</h4>
+        <p>道官亲自录制，四条门规逐字讲解，外门弟子入门第一课。</p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 48px;">
+      <a href="firelotus.html" class="cta-btn reveal-up">唐门火莲发布会 &rarr;</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 财政白皮书 ═══ -->
+<section class="section-ink2" id="finance">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>机密文件 &middot; FISCAL REPORT</div>
+    <h2 class="h-serif reveal-up" style="max-width: 560px;">财政司极机密白皮书</h2>
+    <p class="lead reveal-up" style="margin-bottom: 50px;">由于本季度深夜网吧包夜及疯狂星期四的大规模开销，宗门国库正处于薛定谔的盈亏状态。</p>
+
+    <div class="reveal-up" style="background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 40px; backdrop-filter: blur(20px);">
+      <div style="font-family: 'SF Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--gold); margin-bottom: 20px;">DATA SHEETS / 审计明细</div>
+      <table class="crypto-table">
+        <thead>
+          <tr>
+            <th>项目名称</th>
+            <th>消耗 / 入账</th>
+            <th>资产库存</th>
+            <th>风险评估</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>公摊电费</td>
+            <td>-&#165;250.00</td>
+            <td>剩余 15.4 kWh</td>
+            <td class="trend-down">严重警告：随时断电</td>
+          </tr>
+          <tr>
+            <td>维达原生木浆抽纸</td>
+            <td>-42 包（不明失踪）</td>
+            <td>仅剩 1.5 包</td>
+            <td class="trend-down">战略物资极度短缺</td>
+          </tr>
+          <tr>
+            <td>代拿外卖公积金</td>
+            <td>+128 功德点</td>
+            <td>4,200 功德</td>
+            <td class="trend-up">稳健：外门弟子极度活跃</td>
+          </tr>
+          <tr>
+            <td>宿管好感度</td>
+            <td>-15%（因熄灯后大笑）</td>
+            <td>剩余 45%（黄牌边缘）</td>
+            <td class="trend-down">危急：下次查寝需高度警戒</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 门规 ═══ -->
+<section class="section-paper" id="tenets">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>门规 &middot; TENETS</div>
+    <h2 class="h-serif reveal-up">四条门规<br>唐门立身之本</h2>
+    <div class="tenet-grid stagger">
+      <div class="tenet reveal-up">
+        <div class="glyph">一</div>
+        <h3>玩笑要认真</h3>
+        <p>唐门是个玩笑，但从不敷衍。既然要整活，就整到底、整到位。</p>
+      </div>
+      <div class="tenet reveal-up">
+        <div class="glyph">二</div>
+        <h3>门内无高低</h3>
+        <p>门主与外门弟子同席而坐。头衔分工，情谊从不分先后。</p>
+      </div>
+      <div class="tenet reveal-up">
+        <div class="glyph">三</div>
+        <h3>门不因人散</h3>
+        <p>毕业、搬家、失联都不是散门的理由。唐门认的是这扇门，不是某一间宿舍。</p>
+      </div>
+      <div class="tenet reveal-up">
+        <div class="glyph">四</div>
+        <h3>暗号不外传</h3>
+        <p>唐门内部的梗、称呼与规矩，只在门内流通——这是唐门最后的体面。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 合作伙伴 ═══ -->
+<section class="section-dark" id="alliance">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>江湖联盟 &middot; ALLIANCE</div>
+    <h2 class="h-serif reveal-up" style="max-width: 520px;">唐门不是一个人的江湖</h2>
+    <p class="lead reveal-up" style="margin-bottom: 20px;">江湖路远，唐门与两大势力结为盟友，遇事互为犄角，逢庆互相道贺。</p>
+    <div class="alliance-grid stagger">
+      <div class="ally-card reveal-up">
+        <div class="ally-mark">麒</div>
+        <div class="ally-type">结义盟友 &middot; SWORN ALLY</div>
+        <h3>麒麟会</h3>
+        <p>唐门结义已久的兄弟势力，行事讲究体面与规矩，多次在拍卖会与发布会上联合出品。唐门遇大事，麒麟会必到场道贺。</p>
+      </div>
+      <div class="ally-card reveal-up">
+        <div class="ally-mark">海</div>
+        <div class="ally-type">同盟势力 &middot; ALLIANCE</div>
+        <h3>海尔帮</h3>
+        <p>与唐门渊源颇深的另一方江湖势力，作风爽快、重情重义。两派门人私交甚好，逢年过节必互相走动、共办活动。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 晋升试炼 ═══ -->
+<section class="section-ink2" id="trial">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>内门考核 &middot; THE TRIAL</div>
+    <h2 class="h-serif reveal-up" style="max-width: 560px;">内门晋升试炼真题</h2>
+    <p class="lead reveal-up">通过以下试炼，方可晋升内门。道官全程监考，门主拥有最终裁定权。</p>
+    <div class="trial-grid stagger">
+      <div class="trial-card reveal-up">
+        <span class="trial-tag">试炼一 / LOGIC</span>
+        <h3>室友代餐悖论</h3>
+        <p><strong>题目：</strong>当门主让你帮带一份黄焖鸡（不加辣），而副门主让你帮带一份麻辣烫，且你只有两只手，同时宿管在校门口设卡检查。作为外门弟子，你如何在保证不弄混外卖的前提下，白嫖到门主的快乐水？</p>
+      </div>
+      <div class="trial-card reveal-up">
+        <span class="trial-tag">试炼二 / ACOUSTICS</span>
+        <h3>呼噜声逆相消声学理论</h3>
+        <p><strong>题目：</strong>深夜3点，对床传出了频率为 45Hz、分贝高达 80dB 的巨型鼾声。在不物理毁灭室友的前提下，如何利用一把铁盆和一根筷子，制造完美的声学反相波动，将其噪音降为 0？</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 加入唐门 ═══ -->
+<section class="section-paper" id="join">
+  <div class="max">
+    <div class="eyebrow reveal-up"><span class="seal-tick"></span>加入唐门 &middot; JOIN US</div>
+    <h2 class="h-serif reveal-up" style="max-width: 520px;">门一直开着，等一个对暗号的人</h2>
+    <p class="lead reveal-up">唐门不设山门大典，也不筛简历，只看一件事——你是不是那个把无聊过成认真的人。</p>
+
+    <div class="join-wrap">
+      <div class="reveal-up">
+        <div class="position-list">
+          <div class="position">
+            <div><div class="p-name">外门弟子</div><div class="p-desc">唐门的起点，门外观礼、门内修行，人人皆可申请。</div></div>
+            <div class="p-tag">长期招募</div>
+          </div>
+          <div class="position">
+            <div><div class="p-name">内门弟子</div><div class="p-desc">经外门历练，深得门中信任者，可参与门内核心事务。</div></div>
+            <div class="p-tag">内部举荐</div>
+          </div>
+          <div class="position">
+            <div><div class="p-name">财政管理人员</div><div class="p-desc">掌管门内钱粮账目，需心细如发，账目从不含糊。</div></div>
+            <div class="p-tag">按需招募</div>
+          </div>
+          <div class="position">
+            <div><div class="p-name">道官</div><div class="p-desc">掌律法、执门规，由长老与门主共同考察后任命。</div></div>
+            <div class="p-tag">考察制</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal-up">
+        <div class="contact-card">
+          <div class="eyebrow"><span class="seal-tick"></span>联系门内</div>
+          <h3>递上你的拜帖</h3>
+          <p>无论是申请入门、洽谈联盟、送拍藏品，还是单纯想聊聊唐门的故事，都可以写信到门内信箱，门主与唐主会亲自过目。</p>
+          <div class="email-box">
+            <span class="addr" id="emailAddr">ccy20100113@outlook.com</span>
+            <button class="copy-btn" id="copyBtn" type="button">复制</button>
+          </div>
+          <div class="join-actions">
+            <a class="cta-btn" href="mailto:ccy20100113@outlook.com?subject=%E7%94%B3%E8%AF%B7%E5%8A%A0%E5%85%A5%E5%94%90%E9%97%A8">写信入门</a>
+            <button class="cta-btn" onclick="openApplyModal()" style="border:none;cursor:pointer;font-family:inherit;">在线申请</button>
+            <a class="cta-btn ghost" href="#hierarchy">先看看门派架构</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 页脚 -->
+<footer>
+  <div class="f-mark">唐门 &middot; SUGARDOOR</div>
+  <div class="f-note">始于宿舍 &middot; 未曾散场</div>
+</footer>
+
+<!-- ═══ JavaScript ═══ -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ── 开门动画 ──────────────────────────────────────
+  const nav = document.getElementById('nav');
+  const hero = document.getElementById('heroSection');
+
+  window.addEventListener('load', () => {
+    nav.classList.add('show');
+    setTimeout(() => hero.classList.add('doors-open'), 500);
+    setTimeout(() => {
+      document.getElementById('heroContent').classList.add('reveal');
+      document.getElementById('heroScroll').classList.add('reveal');
+    }, 900);
+  });
+
+  // ── 导航栏滚动效果 ────────────────────────────────
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 100) {
+      nav.style.background = 'rgba(11, 11, 13, 0.92)';
+    } else {
+      nav.style.background = 'rgba(11, 11, 13, 0.6)';
+    }
+  });
+
+  // ── 滚动揭示动画 ──────────────────────────────────
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('in');
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal-up').forEach(el => observer.observe(el));
+
+  // ── 3D视差效果 ────────────────────────────────────
+  const scene3D = document.getElementById('scene-3d');
+
+  window.addEventListener('mousemove', (e) => {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const mouseX = (e.clientX / w) - 0.5;
+    const mouseY = (e.clientY / h) - 0.5;
+
+    const rotateY = mouseX * 12;
+    const rotateX = -mouseY * 8;
+    const translateX = mouseX * -20;
+
+    scene3D.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateX(${translateX}px)`;
+  });
+
+  // 移动端陀螺仪
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', (event) => {
+      let gamma = event.gamma;
+      let beta = event.beta;
+      if (gamma && beta) {
+        let rY = (gamma / 45) * 10;
+        let rX = ((beta - 45) / 45) * 6;
+        scene3D.style.transform = `rotateX(${rX}deg) rotateY(${rY}deg)`;
+      }
+    });
+  }
+
+  // ── 练器阁 Tabs ───────────────────────────────────
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`.tab-panel[data-panel="${btn.dataset.tab}"]`).classList.add('active');
+    });
+  });
+
+  // ── 复制邮箱 ──────────────────────────────────────
+  const copyBtn = document.getElementById('copyBtn');
+  copyBtn.addEventListener('click', async () => {
+    const email = document.getElementById('emailAddr').textContent.trim();
+    try {
+      await navigator.clipboard.writeText(email);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = email;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    copyBtn.textContent = '已复制';
+    copyBtn.classList.add('copied');
+    setTimeout(() => {
+      copyBtn.textContent = '复制';
+      copyBtn.classList.remove('copied');
+    }, 1800);
+  });
+
+  // ── 卡片3D倾斜 + 高光追踪 ────────────────────────
+  document.querySelectorAll('.trial-card, .ally-card, .launch-card').forEach(card => {
+    card.addEventListener('mousemove', e => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const rX = ((y - centerY) / centerY) * -5;
+      const rY = ((x - centerX) / centerX) * 5;
+      card.style.transform = `perspective(800px) rotateX(${rX}deg) rotateY(${rY}deg) scale3d(1.01, 1.01, 1.01)`;
+      card.style.transition = 'none';
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+      card.style.transition = 'transform 0.4s ease';
+    });
+  });
+});
+
+
+  // ── 通知系统 ──────────────────────────────────────
+  let notifPanelOpen = false;
+  let notifications = [];
+
+  // 切换通知面板
+  function toggleNotifPanel() {
+    const panel = document.getElementById('notifPanel');
+    notifPanelOpen = !notifPanelOpen;
+    if (notifPanelOpen) {
+      panel.classList.add('show');
+      loadNotifications();
+    } else {
+      panel.classList.remove('show');
+    }
+  }
+
+  // 点击外部关闭面板
+  document.addEventListener('click', (e) => {
+    const notifItem = document.getElementById('notifNavItem');
+    if (notifPanelOpen && notifItem && !notifItem.contains(e.target)) {
+      document.getElementById('notifPanel').classList.remove('show');
+      notifPanelOpen = false;
+    }
+  });
+
+  // 加载通知
+  async function loadNotifications() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/notifications', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        notifications = data.notifications;
+        updateNotifBadge(data.unread_count);
+        renderNotifications();
+      }
+    } catch (error) {
+      console.error('加载通知失败:', error);
+    }
+  }
+
+  // 更新未读数量
+  function updateNotifBadge(count) {
+    const badge = document.getElementById('notifBadge');
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'flex';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  // 渲染通知列表
+  function renderNotifications() {
+    const list = document.getElementById('notifList');
+    if (!notifications || notifications.length === 0) {
+      list.innerHTML = '<div class="notif-empty">暂无通知</div>';
+      return;
+    }
+
+    const typeIcons = {
+      'guarantor_request': '🤝',
+      'guarantor_confirmed': '✅',
+      'guarantor_rejected': '❌',
+      'application_submitted': '📝',
+      'application_approved': '🎉',
+      'application_rejected': '❌'
+    };
+
+    const typeClasses = {
+      'guarantor_request': 'guarantor',
+      'guarantor_confirmed': 'status',
+      'guarantor_rejected': 'status',
+      'application_submitted': 'application',
+      'application_approved': 'status',
+      'application_rejected': 'status'
+    };
+
+    list.innerHTML = notifications.map(n => {
+      const icon = typeIcons[n.type] || '📢';
+      const iconClass = typeClasses[n.type] || 'status';
+      const time = formatTime(n.created_at);
+      const isUnread = n.is_read === 0;
+      const showActions = n.type === 'guarantor_request' && isUnread;
+
+      return `
+        <div class="notif-item ${isUnread ? 'unread' : ''}" data-id="${n.id}">
+          <div class="notif-item-header">
+            <div style="display:flex;align-items:center;">
+              <span class="notif-type-icon ${iconClass}">${icon}</span>
+              <span class="notif-item-title">${escapeHtml(n.title)}</span>
+            </div>
+            <span class="notif-item-time">${time}</span>
+          </div>
+          <div class="notif-item-content">${escapeHtml(n.content)}</div>
+          ${showActions ? `
+            <div class="notif-item-actions">
+              <button class="notif-action-btn confirm" onclick="handleGuarantorAction(${n.related_id}, 'confirm', ${n.id})">确认保人</button>
+              <button class="notif-action-btn reject" onclick="handleGuarantorAction(${n.related_id}, 'reject', ${n.id})">拒绝</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 格式化时间
+  function formatTime(dateStr) {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return `${minutes}分钟前`;
+    if (hours < 24) return `${hours}小时前`;
+    if (days < 7) return `${days}天前`;
+    return date.toLocaleDateString('zh-CN');
+  }
+
+  // 转义HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // 标记全部已读
+  async function markAllRead() {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      await fetch('/api/notifications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ mark_all: true })
+      });
+      loadNotifications();
+    } catch (error) {
+      console.error('标记已读失败:', error);
+    }
+  }
+
+  // 处理保人操作
+  async function handleGuarantorAction(applicationId, action, notificationId) {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const response = await fetch('/api/guarantor', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ application_id: applicationId, action })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        // 标记该通知已读
+        await fetch('/api/notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ notification_id: notificationId })
+        });
+        loadNotifications();
+      } else {
+        alert(data.error || '操作失败');
+      }
+    } catch (error) {
+      alert('操作失败，请重试');
+    }
+  }
+
+  // 打开申请弹窗
+  function openApplyModal() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+    document.getElementById('applyModal').classList.add('show');
+  }
+
+  // 关闭申请弹窗
+  function closeApplyModal() {
+    document.getElementById('applyModal').classList.remove('show');
+  }
+
+  // 提交申请
+  async function submitApplication() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    const guarantorName = document.getElementById('applyGuarantor').value.trim();
+    const reason = document.getElementById('applyReason').value.trim();
+
+    try {
+      const response = await fetch('/api/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ guarantor_name: guarantorName, reason })
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        alert('申请已提交！');
+        closeApplyModal();
+        document.getElementById('applyGuarantor').value = '';
+        document.getElementById('applyReason').value = '';
+        loadNotifications();
+      } else {
+        alert(data.error || '提交失败');
+      }
+    } catch (error) {
+      alert('提交失败，请重试');
+    }
+  }
+
+  // 定期刷新通知（每30秒）
+  setInterval(() => {
+    const token = localStorage.getItem('token');
+    if (token) loadNotifications();
+  }, 30000);
+
+
+  // ── 成员列表 ──────────────────────────────────────
+  let approvedMembers = [];
+
+  async function loadApprovedMembers() {
+    try {
+      const response = await fetch('/api/members');
+      const data = await response.json();
+      if (data.success) {
+        approvedMembers = data.members;
+        renderMembersByRole();
+      }
+    } catch (error) {
+      console.error('加载成员失败:', error);
+    }
+  }
+
+  function renderMembersByRole() {
+    const roles = ['门主', '唐主', '道官', '财政管理人员', '长老', '内门弟子', '外门弟子'];
+    roles.forEach(role => {
+      const container = document.querySelector('.member-list[data-role="' + role + '"]');
+      const countEl = document.querySelector('.member-count[data-role="' + role + '"]');
+      if (!container) return;
+      const members = approvedMembers.filter(m => m.role === role);
+      if (countEl) countEl.textContent = members.length + '人';
+      if (members.length === 0) {
+        container.innerHTML = '<div class="member-empty">暂无成员</div>';
+        return;
+      }
+      container.innerHTML = members.map(m => {
+        const avatarHtml = m.avatar_url
+          ? '<img src="' + escapeHtml(m.avatar_url) + '" alt="">'
+          : '<span class="avatar-placeholder">' + escapeHtml(m.nickname.charAt(0)) + '</span>';
+        return '<div class="member-card">' +
+          '<div class="member-avatar">' + avatarHtml + '</div>' +
+          '<div class="member-info">' +
+            '<div class="member-nickname">' + escapeHtml(m.nickname) + '</div>' +
+            (m.title ? '<div class="member-title">' + escapeHtml(m.title) + '</div>' : '') +
+            (m.bio ? '<div class="member-bio">' + escapeHtml(m.bio) + '</div>' : '') +
+          '</div>' +
+        '</div>';
+      }).join('');
+    });
+  }
+
+  function toggleMembers(rankRow) {
+    const section = rankRow.closest('.rank-section');
+    const memberList = section.querySelector('.member-list');
+    const isExpanded = memberList.classList.contains('expanded');
+    if (isExpanded) {
+      memberList.classList.remove('expanded');
+      rankRow.classList.remove('expanded');
+    } else {
+      memberList.classList.add('expanded');
+      rankRow.classList.add('expanded');
+    }
+  }
+
+  // ── 身份登记 ──────────────────────────────────────
+  function openRegisterModal() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+    document.getElementById('registerModal').classList.add('show');
+  }
+
+  function closeRegisterModal() {
+    document.getElementById('registerModal').classList.remove('show');
+  }
+
+  async function submitRegistration() {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      window.location.href = 'login.html';
+      return;
+    }
+    const role = document.getElementById('registerRole').value;
+    const title = document.getElementById('registerTitle').value.trim();
+    const bio = document.getElementById('registerBio').value.trim();
+
+    try {
+      const response = await fetch('/api/members', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ role, title, bio })
+      });
+      const data = await response.json();
+      if (data.success) {
+        alert('身份登记已提交，等待审批');
+        closeRegisterModal();
+        document.getElementById('registerTitle').value = '';
+        document.getElementById('registerBio').value = '';
+        loadNotifications();
+      } else {
+        alert(data.error || '提交失败');
+      }
+    } catch (error) {
+      alert('提交失败，请重试');
+    }
+  }
+
+  // 加载成员并显示登记按钮
+  document.addEventListener('DOMContentLoaded', () => {
+    loadApprovedMembers();
+    const token = localStorage.getItem('token');
+    if (token) {
+      document.getElementById('registerBtn').style.display = 'inline-block';
+    }
+  });
+
+  // ── 登录状态检查 ──────────────────────────────────
+  async function checkLoginStatus() {
+    const token = localStorage.getItem('token');
+    const loginNavItem = document.getElementById('loginNavItem');
+    const notifNavItem = document.getElementById('notifNavItem');
+    
+    if (token) {
+      try {
+        const response = await fetch('/api/auth/me', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          // 已登录，显示用户信息
+          loginNavItem.innerHTML = '<a href="login.html" class="nav-cta">' + data.user.nickname + '</a>';
+          // 显示通知图标
+          notifNavItem.style.display = 'block';
+          // 加载通知
+          loadNotifications();
+        } else {
+          // token无效，清除
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          notifNavItem.style.display = 'none';
+        }
+      } catch (error) {
+        // 网络错误，保持登录按钮
+      }
+    } else {
+      notifNavItem.style.display = 'none';
+    }
+  }
+</script>
+
+
+<!-- 申请弹窗 -->
+<div class="apply-modal-overlay" id="applyModal">
+  <div class="apply-modal">
+    <h3>申请加入唐门</h3>
+    <div class="apply-form-group">
+      <label>保人昵称（可选）</label>
+      <input type="text" id="applyGuarantor" placeholder="填写保人的昵称">
+      <div class="apply-form-hint">填写保人后，需要保人确认才能进入审核</div>
+    </div>
+    <div class="apply-form-group">
+      <label>申请理由</label>
+      <textarea id="applyReason" placeholder="简单介绍一下自己，说说为什么想加入唐门"></textarea>
+    </div>
+    <div class="apply-btns">
+      <button class="apply-cancel-btn" onclick="closeApplyModal()">取消</button>
+      <button class="apply-submit-btn" onclick="submitApplication()">提交申请</button>
+    </div>
+  </div>
+</div>
+
+<!-- 身份登记弹窗 -->
+<div class="register-modal-overlay" id="registerModal">
+  <div class="register-modal">
+    <h3>身份登记</h3>
+    <div class="register-form-group">
+      <label>选择身份</label>
+      <select id="registerRole">
+        <option value="外门弟子">外门弟子</option>
+        <option value="内门弟子">内门弟子</option>
+        <option value="长老">长老</option>
+        <option value="财政管理人员">财政管理人员</option>
+        <option value="道官">道官</option>
+        <option value="唐主">唐主</option>
+        <option value="门主">门主</option>
+      </select>
+    </div>
+    <div class="register-form-group">
+      <label>头衔（可选）</label>
+      <input type="text" id="registerTitle" placeholder="如：首席铸剑师">
+    </div>
+    <div class="register-form-group">
+      <label>简介（可选）</label>
+      <textarea id="registerBio" placeholder="简单介绍一下自己"></textarea>
+    </div>
+    <div class="register-btns">
+      <button class="register-cancel-btn" onclick="closeRegisterModal()">取消</button>
+      <button class="register-submit-btn" onclick="submitRegistration()">提交登记</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+
+
